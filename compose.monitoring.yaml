@@ -12,5 +12,15 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: observa-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+
 volumes:
   prometheus_data:
+  grafana_data:

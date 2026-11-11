@@ -1,8 +1,8 @@
-les variables d'environnement dans PowerShell
+# les variables d'environnement dans PowerShell
 $env:DB_USERNAME = "observa_user"
 $env:DB_PASSWORD = Read-Host "Mot de passe PostgreSQL postgresql"
 
-lancer l'application a partir du conteneur docker dans PowerShell
+# lancer l'application a partir du conteneur docker dans PowerShell
 docker run -d `
   --name observa-notes `
   -p 8080:8080 `
@@ -11,28 +11,45 @@ docker run -d `
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/observa_notes `
   observa-notes:1.0
 
-Démarrer l'application
+# Démarrer l'application
 .\mvnw.cmd spring-boot:run
 
-Packaging
+# Packaging
 .\mvnw.cmd clean package -Dskiptests
 
-Packaging sans les tests
+# Packaging sans les tests
 .\mvnw.cmd test -Dtest=StudentServiceTest       
 
-Packaging avec les tests
+# Packaging avec les tests
 .\mvnw clean verify
 
-Lancer compose
+# Lancer compose
 docker compose up -d --build
 
-lancer github actions sur ubuntu
+# lancer github actions sur ubuntu
 ./run.sh
 
+# Démarrer Prometheus
+docker compose -f compose.monitoring.yaml up -d
 
+# Vérifier son démarrage
+docker compose -f compose.monitoring.yaml ps
 
+# Obtenir des données concernant la mémoire utilisée par la JVM par l'interface Prometheus
+Ouvre Graph.
+Saisis jvm_memory_used_bytes.
+Clique sur Execute.
 
+# Arrêter Prometheus
+docker compose -f compose.monitoring.yaml down
 
+# Consulter les logs
+docker compose -f compose.monitoring.yaml logs -f prometheus
 
+# Vérifier les conteneurs
+docker ps
+
+# Prometheus interface
+http://localhost:9090/
 
 
