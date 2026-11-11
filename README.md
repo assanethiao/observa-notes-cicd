@@ -1,152 +1,176 @@
-# ObservaNotes — Application Java avec CI/CD et supervision
+# ObservaNotes — API REST Java avec CI/CD et supervision
 
 **Projet de portfolio DevOps, Cloud et développement logiciel**
 
-> Projet de bout en bout : développement d'une application Java avec Spring Boot, tests automatisés, conteneurisation Docker, intégration et déploiement continus, puis supervision avec Prometheus et Grafana.
+ObservaNotes est une application de gestion des étudiants et de leurs résultats scolaires, développée avec Java et Spring Boot. Elle expose ses fonctionnalités à travers une API REST et utilise PostgreSQL pour la persistance des données.
 
-## Présentation
+Ce projet met en œuvre une chaîne DevOps complète : développement, tests automatisés, conteneurisation, intégration continue, publication d'images Docker, déploiement automatisé et supervision applicative.
 
-ObservaNotes est une application de gestion des étudiants et de leurs résultats scolaires. Elle expose ses fonctionnalités sous la forme d'une API REST développée en Java avec Spring Boot.
+## Architecture
 
-Le projet vise à mettre en pratique une chaîne complète de développement et d'exploitation logicielle (DevOps), depuis le versionnement du code jusqu'au déploiement et à la supervision de l'application.
+Le pipeline repose sur GitHub Actions pour automatiser la validation et la publication de l'application. Un runner auto-hébergé sous Ubuntu (WSL) assure ensuite le déploiement avec Docker Compose.
 
-**Statut :** en cours de réalisation.
+```mermaid
+flowchart TD
+    A[Développeur] --> B[Git / GitHub]
+    B --> C[GitHub Actions]
+    C --> D[Compilation et tests Maven]
+    D --> E[Construction de l'image Docker]
+    E --> F[Publication Docker Hub]
+    F --> G[Runner Ubuntu WSL]
+    G --> H[Docker Compose]
 
-## Objectifs
-
-- Développer une API REST avec Java et Spring Boot.
-- Gérer les étudiants et leurs notes.
-- Calculer les moyennes et consulter les résultats.
-- Persister les données dans PostgreSQL.
-- Automatiser les tests avec JUnit 5 et Mockito.
-- Contrôler la qualité et la couverture du code.
-- Conteneuriser l'application avec Docker.
-- Orchestrer les services avec Docker Compose.
-- Automatiser les workflows avec GitHub Actions.
-- Publier les images Docker sur Docker Hub.
-- Déployer l'application dans un environnement Ubuntu.
-- Collecter les métriques avec Prometheus.
-- Visualiser les indicateurs avec Grafana.
-- Surveiller le système et les conteneurs avec Node Exporter et cAdvisor.
-
-## Architecture cible
-
-```text
-Développeur
-    |
-    v
-Git / GitHub
-    |
-    v
-GitHub Actions
-    |
-    +--> Compilation Java
-    |
-    +--> Vérification de la qualité
-    |
-    +--> Tests automatisés
-    |
-    +--> Construction de l'image Docker
-    |
-    +--> Publication sur Docker Hub
-    |
-    v
-Déploiement Ubuntu
-    |
-    v
-Docker Compose
-    |
-    +--> Application Java / Spring Boot
-    |
-    +--> PostgreSQL
-    |
-    +--> Prometheus
-    |
-    +--> Grafana
-    |
-    +--> Node Exporter
-    |
-    +--> cAdvisor
+    subgraph ENV["Environnement de déploiement"]
+        H --> I[Spring Boot API]
+        H --> J[PostgreSQL]
+        H --> K[Prometheus]
+        H --> L[Grafana]
+        I --> K
+        K --> L
+    end
 ```
 
-## Technologies
+### Technologies utilisées
 
 | Domaine | Technologies |
 |---|---|
 | Langage | Java 25 |
 | Framework | Spring Boot |
 | API | Spring Web, API REST |
-| Persistance | Spring Data JPA, PostgreSQL |
+| Persistance | Spring Data JPA, PostgreSQL 17 |
 | Tests | JUnit 5, Mockito |
-| Qualité et couverture | Checkstyle, JaCoCo |
-| Gestion de projet Java | Maven |
+| Build | Maven |
 | Versionnement | Git, GitHub |
-| CI/CD | GitHub Actions |
+| Intégration et déploiement continus | GitHub Actions |
 | Conteneurisation | Docker, Docker Compose |
-| Registre | Docker Hub |
-| Déploiement | Ubuntu, self-hosted runner |
-| Supervision | Prometheus |
+| Registre d'images | Docker Hub |
+| Environnement de déploiement | Ubuntu sous WSL, self-hosted runner |
+| Instrumentation | Spring Boot Actuator, Micrometer |
+| Collecte des métriques | Prometheus |
 | Visualisation | Grafana |
-| Monitoring | Node Exporter, cAdvisor |
 
-## Fonctionnalités prévues
+## Fonctionnalités de l'application
 
-- Créer, consulter, modifier et supprimer des étudiants.
-- Ajouter et consulter les notes.
-- Calculer les moyennes des étudiants.
-- Consulter les résultats à travers l'API REST.
-- Vérifier l'état de santé de l'application.
-- Exposer les métriques nécessaires à Prometheus.
-- Visualiser les indicateurs dans Grafana.
-
-## API REST
-
-Les routes seront définies et documentées pendant le développement. Elles couvriront notamment les opérations CRUD sur les étudiants et les notes, ainsi que le calcul des moyennes.
+- Gestion des étudiants : création, consultation, modification et suppression.
+- Gestion des notes associées aux étudiants.
+- Calcul des moyennes.
+- Exposition des fonctionnalités à travers une API REST.
+- Vérification de l'état de santé de l'application avec Spring Boot Actuator.
+- Exposition des métriques applicatives au format Prometheus.
 
 ## Pipeline CI/CD
 
-Le pipeline devra automatiser :
+Le workflow GitHub Actions automatise les principales étapes du cycle de livraison :
 
-1. La récupération du code source.
-2. La compilation de l'application Java avec Maven.
-3. Les contrôles de qualité.
-4. L'exécution des tests automatisés.
-5. La construction de l'image Docker.
-6. La publication de l'image sur Docker Hub.
-7. Le déploiement automatisé après validation.
+1. Déclenchement à la suite d'un push ou d'une pull request sur `main`.
+2. Configuration de l'environnement Java.
+3. Compilation et vérification du projet avec Maven.
+4. Exécution des tests automatisés.
+5. Construction de l'image Docker.
+6. Publication de l'image sur Docker Hub avec les tags `latest` et le hash du commit.
+7. Déploiement automatique sur l'environnement Ubuntu via un runner auto-hébergé, après un push sur `main`.
 
-## Supervision
+Le déploiement utilise Docker Compose pour récupérer la nouvelle image et mettre à jour les services.
 
-Prometheus collectera les métriques de l'application et de l'infrastructure.
+## Conteneurisation et déploiement
 
-Grafana permettra notamment de visualiser :
+L'application et ses services associés sont exécutés dans des conteneurs Docker orchestrés avec Docker Compose.
 
-- Le nombre de requêtes HTTP.
-- Le taux d'erreurs.
-- Les temps de réponse de l'API.
-- L'utilisation CPU et mémoire.
-- Les ressources consommées par les conteneurs.
-- La disponibilité des services.
+Les principaux services sont :
 
-Node Exporter fournira les métriques système et cAdvisor les métriques des conteneurs.
+- **Application Spring Boot** : expose l'API REST sur le port `8080`.
+- **PostgreSQL** : assure la persistance des données.
+- **Prometheus** : collecte les métriques de l'application sur le port `9090`.
+- **Grafana** : permet de consulter les tableaux de bord sur le port `3000`.
 
-## Environnement de déploiement
+Le premier environnement de déploiement repose sur Ubuntu sous WSL. Le runner auto-hébergé permet à GitHub Actions d'exécuter le déploiement directement dans cet environnement.
 
-Le premier environnement de démonstration reposera sur Ubuntu dans WSL, Docker et Docker Compose. GitHub Actions assurera la CI et un self-hosted runner exécutera le déploiement dans cet environnement.
+### Lancement de l'environnement
 
-Une extension vers un VPS Ubuntu pourra ensuite permettre de démontrer un déploiement sur un serveur distant.
+Depuis le répertoire racine du projet, créer un fichier `.env` contenant les variables nécessaires à `compose.prod.yaml` :
 
-## Documentation et démonstration
+```env
+DOCKERHUB_USERNAME=votre_identifiant_dockerhub
+IMAGE_TAG=latest
+APP_DB_USERNAME=observa_user
+APP_DB_PASSWORD=votre_mot_de_passe
+```
 
-Cette section sera complétée au fil du projet avec :
+Ne jamais publier ce fichier ni y placer de véritables identifiants dans le dépôt Git.
 
-- Les instructions d'installation et de lancement.
-- Les exemples d'utilisation de l'API.
-- Les résultats des tests automatisés.
-- Les captures des workflows GitHub Actions.
-- Les étapes de publication et de déploiement Docker.
-- Les dashboards Grafana.
-- Les résultats de la supervision.
+Récupérer les images :
+
+```bash
+docker compose -f compose.prod.yaml pull
+```
+
+Démarrer les services :
+
+```bash
+docker compose -f compose.prod.yaml up -d
+```
+
+Vérifier leur état :
+
+```bash
+docker compose -f compose.prod.yaml ps
+```
+
+Consulter les journaux de l'application :
+
+```bash
+docker compose -f compose.prod.yaml logs -f app
+```
+
+Arrêter les services sans supprimer les volumes de données :
+
+```bash
+docker compose -f compose.prod.yaml down
+```
+
+### Accès aux services
+
+| Service | Adresse |
+|---|---|
+| API Spring Boot | http://localhost:8080 |
+| Santé de l'application | http://localhost:8080/actuator/health |
+| Métriques Prometheus de Spring Boot | http://localhost:8080/actuator/prometheus |
+| Interface Prometheus | http://localhost:9090 |
+| Interface Grafana | http://localhost:3000 |
+
+Ces adresses sont accessibles depuis la machine qui héberge les conteneurs.
+
+## Supervision et observabilité
+
+La supervision repose sur Spring Boot Actuator, Micrometer, Prometheus et Grafana.
+
+Micrometer expose les métriques de l'application. Prometheus les collecte périodiquement, puis Grafana les exploite pour construire des tableaux de bord.
+
+Le dashboard ObservaNotes permet notamment de suivre :
+
+- L'utilisation de la mémoire JVM.
+- Le nombre de threads actifs.
+- Le volume de requêtes HTTP.
+- L'évolution de l'activité de l'API.
+
+### Dashboard Grafana
+
+![Dashboard Grafana d'ObservaNotes](./graphana.png)
+
+*Tableau de bord de supervision de l'application ObservaNotes.*
+
+## Compétences mises en pratique
+
+Ce projet m'a permis de travailler sur plusieurs domaines complémentaires :
+
+- Développement d'une API REST avec Java et Spring Boot.
+- Persistance des données avec PostgreSQL et Spring Data JPA.
+- Tests unitaires avec JUnit 5 et Mockito.
+- Conteneurisation et orchestration avec Docker et Docker Compose.
+- Automatisation d'un pipeline CI/CD avec GitHub Actions.
+- Publication d'images Docker sur Docker Hub.
+- Déploiement automatisé avec un runner auto-hébergé sous Ubuntu.
+- Instrumentation et supervision avec Actuator, Micrometer, Prometheus et Grafana.
 
 ## Auteur
 
@@ -154,8 +178,9 @@ Cette section sera complétée au fil du projet avec :
 Élève-ingénieur en Télécommunications et Réseaux  
 Sup Galilée – Paris 13
 
-[Portfolio](https://assanethiao.github.io) · [LinkedIn](https://www.linkedin.com/in/assane-thiao-54a159278)
+- Portfolio : [assanethiao.github.io](https://assanethiao.github.io)
+- LinkedIn : [Assane Thiao](https://www.linkedin.com/in/assane-thiao-54a159278)
 
 ---
 
-*Projet réalisé dans le cadre d'un apprentissage pratique du développement Java, du DevOps, de la CI/CD, de la conteneurisation et de l'observabilité.*
+*Projet réalisé dans le cadre d'un apprentissage pratique du développement logiciel, du DevOps, de la CI/CD, de la conteneurisation et de l'observabilité.*

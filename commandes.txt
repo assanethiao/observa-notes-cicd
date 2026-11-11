@@ -29,7 +29,7 @@ docker compose up -d --build
 # lancer github actions sur ubuntu
 ./run.sh
 
-# Démarrer Prometheus
+# Démarrer Prometheus Grafana
 docker compose -f compose.monitoring.yaml up -d
 
 # Vérifier son démarrage
@@ -40,7 +40,7 @@ Ouvre Graph.
 Saisis jvm_memory_used_bytes.
 Clique sur Execute.
 
-# Arrêter Prometheus
+# Arrêter Prometheus Grafana
 docker compose -f compose.monitoring.yaml down
 
 # Consulter les logs
@@ -52,4 +52,5 @@ docker ps
 # Prometheus interface
 http://localhost:9090/
 
-
+# Grafana interface log et mdp admin (    )
+http://localhost:3000/login
