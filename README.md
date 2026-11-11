@@ -73,7 +73,7 @@ Docker Compose
 
 | Domaine | Technologies |
 |---|---|
-| Langage | Java 21 |
+| Langage | Java 25 |
 | Framework | Spring Boot |
 | API | Spring Web, API REST |
 | Persistance | Spring Data JPA, PostgreSQL |

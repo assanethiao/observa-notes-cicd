@@ -1,0 +1,34 @@
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: observa-postgres
+    environment:
+      POSTGRES_DB: observa_notes
+      POSTGRES_USER: observa_user
+      POSTGRES_PASSWORD: observa_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U observa_user -d observa_notes"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: observa-notes
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/observa_notes
+      SPRING_DATASOURCE_USERNAME: observa_user
+      SPRING_DATASOURCE_PASSWORD: observa_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
