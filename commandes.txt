@@ -26,7 +26,8 @@ Packaging avec les tests
 Lancer compose
 docker compose up -d --build
 
-
+lancer github actions sur ubuntu
+./run.sh
 
 
 
