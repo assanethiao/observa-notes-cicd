@@ -68,3 +68,24 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/observa-notes:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/observa-notes:${{ github.sha }}
+
+  deploy:
+    name: Deploy on Ubuntu WSL
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, Linux, X64]
+
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      IMAGE_TAG: ${{ github.sha }}
+      APP_DB_USERNAME: ${{ secrets.APP_DB_USERNAME }}
+      APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Déployer avec Docker Compose
+        run: |
+          docker compose -f compose.prod.yaml pull
+          docker compose -f compose.prod.yaml up -d --remove-orphans
