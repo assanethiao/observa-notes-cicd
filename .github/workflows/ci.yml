@@ -1,5 +1,5 @@
 
-name: ObservaNotes CI
+name: ObservaNotes CI/CD
 
 on:
   push:
@@ -7,10 +7,32 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    name: Build and Test Spring Boot
+    name: Build, Test and Publish
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: observa_notes
+          POSTGRES_USER: observa_user
+          POSTGRES_PASSWORD: observa_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U observa_user -d observa_notes"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_USERNAME: observa_user
+      DB_PASSWORD: observa_password
 
     steps:
       - name: Récupérer le code
@@ -23,8 +45,26 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Vérifier la version Java
-        run: java -version
-
       - name: Compiler et exécuter les tests
         run: ./mvnw clean verify
+
+      - name: Configurer Docker Buildx
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Se connecter à Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Construire et publier l'image Docker
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/observa-notes:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/observa-notes:${{ github.sha }}
