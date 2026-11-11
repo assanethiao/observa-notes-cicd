@@ -17,8 +17,11 @@ Démarrer l'application
 Packaging
 .\mvnw.cmd clean package -Dskiptests
 
-Tester
+Packaging sans les tests
 .\mvnw.cmd test -Dtest=StudentServiceTest       
+
+Packaging avec les tests
+.\mvnw clean verify
 
 Lancer compose
 docker compose up -d --build
