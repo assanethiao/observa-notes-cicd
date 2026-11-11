@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build Spring Boot
+    name: Build and Test Spring Boot
     runs-on: ubuntu-latest
 
     steps:
@@ -26,5 +26,5 @@ jobs:
       - name: Vérifier la version Java
         run: java -version
 
-      - name: Compiler le projet
-        run: ./mvnw clean package -DskipTests
+      - name: Compiler et exécuter les tests
+        run: ./mvnw clean verify
